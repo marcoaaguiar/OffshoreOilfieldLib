@@ -11,6 +11,14 @@ package Interfaces
 		input PipeConnector inputConnector;
 		output PipeConnector outputConnector;
 	end BaseInterface;
+
+	partial block SourceInterface
+		output PipeConnector outputConnector;
+	end SourceInterface;	
+	
+	partial block SinkInterface
+		input PipeConnector inputConnector;
+	end SinkInterface;
 	
 	partial block valve = BaseInterface;
 		   
