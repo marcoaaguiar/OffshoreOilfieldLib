@@ -33,11 +33,23 @@ package Components
 	      outputConnector.massFlow[3] = inputConnector.massFlow[3];
 	end Flare;
 	
+	model Valve
+		parameter Real C = 0.0014;
+	
+		SI.Density rho;
+		input SI.Pressure p_upstream, p_downstream;
+		output SI.MassFlowRate w;
+		
+		equation
+			w = C*sqrt(maxFunc(0.1, rho*(p_upstream-p_downstream)));
+	end Valve;
+	
 	model Well "Well Model"
 		//******************//***********************//
 		//               Parameters					 //
 		//******************//***********************//
-		  extends Interfaces.WellInterface; 
+			extends Interfaces.WellInterface; 
+		  	  
 			import SI = Modelica.SIunits;
 			import R = Modelica.Constants.R;
 			import g = Modelica.Constants.g_n;
@@ -85,6 +97,11 @@ package Components
 			
 			SI.MassFlowRate w_in, w_out[3];
 			SI.Pressure p_in, p_out;
+			
+			
+			Valve GasLiftChoke(C = valveP.C_gl, rho = rho_gl, p_upstream= p_in, p_downstream = p_ta, w = w_gl_max);
+			Valve InjectionValve(C = valveP.C_iv, rho = rho_gi, p_upstream= p_ai, p_downstream = p_ti, w = w_gi);
+			Valve ProductionChoke(C = valveP.C_pc, rho = rho_p, p_upstream = p_p, p_downstream = p_out, w = w_p);
 		//******************//***********************//
 		//               Equations					 //
 		//******************//***********************//			
@@ -104,12 +121,12 @@ package Components
 			rho_p = (rho_Lw*mediaP.M_g*p_p*(m_lt+m_gt))/(rho_Lw*R*wellP.T_t*m_lt+mediaP.M_g*p_p*m_gt); //A.4b
 			rho_gl = mediaP.M_g*p_in/(R*wellP.T_a); //A.4d
 			
-			w_gi = valveP.C_iv*sqrt(maxFunc(Components.SqrtEpsilon, rho_gi*(p_ai-p_ti))); //A.2a
-			w_p = valveP.C_pc*sqrt(maxFunc(Components.SqrtEpsilon, rho_p*(p_p-p_out))); //A.2b
+			//w_gi = valveP.C_iv*sqrt(maxFunc(Components.SqrtEpsilon, rho_gi*(p_ai-p_ti))); //A.2a
+			//w_p = valveP.C_pc*sqrt(maxFunc(Components.SqrtEpsilon, rho_p*(p_p-p_out))); //A.2b
 			w_lp = (m_lt/(m_lt+m_gt))*w_p; //A.2d		
 			w_lr = rho_Lw*reservoirP.Q_max*(1-(1-reservoirP.C)*(p_bh/reservoirP.p_r)-reservoirP.C*(p_bh/reservoirP.p_r)^2); //A.2g
 			w_gr = reservoirP.r_glr*w_lr; //A.2h
-			w_gl_max = valveP.C_gl*sqrt((rho_gl*(p_in- p_ta))); //A.2i
+			//w_gl_max = valveP.C_gl*sqrt((rho_gl*(p_in- p_ta))); //A.2i
 
 			w_out[1]= (m_gt/(m_lt+m_gt))*w_p; //A.2c
 			w_out[2] = (1-reservoirP.r_wc)*w_lp; //A.2e
@@ -253,6 +270,10 @@ package Components
 			w_out[1] = p.K_gr*sqrt(rho_t*maxFunc(P_r-p_out, 0.01))*(m_gr/(m_gr+m_or+m_wr));			//A.9j
 			w_out[2] = p.K_lr*sqrt(rho_t*maxFunc(P_r-p_out, 0.01))*(m_or/(m_gr+m_or+m_wr));			//A.9k
 			w_out[3] = p.K_lr*sqrt(rho_t*maxFunc(P_r-p_out, 0.01))*(m_wr/(m_gr+m_or+m_wr));			//A.9l
+			
+/* 			w_out[1] = (1-alpha_lt)*p.K_gr*sqrt(rho_t*maxFunc(P_r-p_out, 0.01));			//A.9j
+			w_out[2] = alpha_lt*p.K_lr*sqrt(rho_t*maxFunc(P_r-p_out, 0.01))*(m_or/(m_or+m_wr));			//A.9k
+			w_out[3] = alpha_lt*p.K_lr*sqrt(rho_t*maxFunc(P_r-p_out, 0.01))*(m_wr/(m_or+m_wr));			//A.9l */
 
 			//State Equaitons   
 			der(m_gp) = w_in[1]-w_glp;
@@ -327,8 +348,6 @@ package Components
 		outputConnector[1].pressure = p_in;
 		outputConnector[2].pressure = p_in;
 		outputConnector[3].pressure = p_in;
-		
-
 		
 		v_h = (L/(m_w/outputConnector[3].massFlow[3]));					//A.11b and .11c
 		//v_h = L*(outputConnector[3].massFlow[3]/m_w);					//A.11b and .11c
