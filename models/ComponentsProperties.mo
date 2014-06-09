@@ -22,6 +22,7 @@ import SI = Modelica.SIunits;
 		
 		//parameter Integer routingTable[n_manifolds,n_wells] = [1,1,1,1,0,0,0,0;	 0,0,0,0,1,1,1,1];
 	end miniNetworkProperty;
+	
 	record MediaProperty "Properties of the flowing media"
 		parameter SI.Density rho_w = 1030;       // [kg/m^3]		// water density	   
 		parameter SI.Density rho_o = 930;        // [kg/m^3]		// oil density	   

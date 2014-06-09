@@ -312,16 +312,23 @@ package Components
 		SI.Volume 						V_s1(start=1, min=0);
 		SI.Volume 						V_s2(start=1, min=0);
 		SI.VolumeFraction 				epsilon(start=1, min =0, max =1);
-		
 
 		Real 							x(start=0, min=0);
+		
+		SI.MassFlowRate					w_in[3](each min = 0);
+		SI.Pressure						p_in; 
 		//******************//***********************//
 		//               	Equations				 //
 		//******************//***********************//	
 	equation
-		outputConnector[1].pressure = inputConnector.pressure;
-		outputConnector[2].pressure = inputConnector.pressure;
-		outputConnector[3].pressure = inputConnector.pressure;
+		w_in = inputConnector.massFlow;
+		p_in = inputConnector.pressure;
+		
+		outputConnector[1].pressure = p_in;
+		outputConnector[2].pressure = p_in;
+		outputConnector[3].pressure = p_in;
+		
+
 		
 		v_h = (L/(m_w/outputConnector[3].massFlow[3]));					//A.11b and .11c
 		//v_h = L*(outputConnector[3].massFlow[3]/m_w);					//A.11b and .11c
@@ -335,23 +342,23 @@ package Components
 		V_s2 = R^2*L*(theta-0.5*sin(2*theta) -(3*sin(theta_1)-3*theta_1*cos(theta_1)-sin(theta_1)^3)/(3*(1-cos(theta_1) ))); 	//A.11k
 	
 		//Gas Phase 
-		outputConnector[1].massFlow[1] = (1-x)*epsilon*inputConnector.massFlow[1];			//A.14a
+		outputConnector[1].massFlow[1] = (1-x)*epsilon*w_in[1];			//A.14a
 		outputConnector[1].massFlow[2] = 0; // no oil through the gas outlet
 		outputConnector[1].massFlow[3] = 0; // no water through the gas outlet
 		
 
 		
 		//Oil Phase
-		x = inputConnector.pressure/P_v;								//A.13a
-		outputConnector[2].massFlow[1] = x*epsilon*inputConnector.massFlow[1];				//A.13b
-		outputConnector[2].massFlow[2] = epsilon*inputConnector.massFlow[2];					//A.13c
+		x = p_in/P_v;								//A.13a
+		outputConnector[2].massFlow[1] = x*epsilon*w_in[1];				//A.13b
+		outputConnector[2].massFlow[2] = epsilon*w_in[2];					//A.13c
 		outputConnector[2].massFlow[3] = 0; // no water through the gas outlet
 
 		//Water Phase
 		epsilon  = V_s2/V_s1;						//A.12a
-		outputConnector[3].massFlow[1] = (1-epsilon)*inputConnector.massFlow[1];				//A.12b
-		outputConnector[3].massFlow[2] = (1-epsilon)*inputConnector.massFlow[2];				//A.12c
-		outputConnector[3].massFlow[3] = inputConnector.massFlow[3];		//A.12d		
+		outputConnector[3].massFlow[1] = (1-epsilon)*w_in[1];				//A.12b
+		outputConnector[3].massFlow[2] = (1-epsilon)*w_in[2];				//A.12c
+		outputConnector[3].massFlow[3] = w_in[3];		//A.12d		
 
 	end Separator;
 	
@@ -382,14 +389,22 @@ package Components
 	
 		Real p_ratio;// p_down/p_up converted to the test conditions
 		SI.VolumeFlowRate q_vol; //Volume converted to test conditions
+		
+		SI.MassFlowRate w_in, w_out;
+		SI.Pressure p_in, p_out;
 	equation	
-		outputConnector.massFlow[1] = inputConnector.massFlow[1]; //A.14a
+		w_in = inputConnector.massFlow[1]; //A.14a
+		w_out = w_in;
+		outputConnector.massFlow[1] = w_out;
 		outputConnector.massFlow[2] = 0;
 		outputConnector.massFlow[3] = 0;
 		
-		q_vol = (outputConnector.massFlow[1]+w_sl)*R*T/(inputConnector.pressure*M_g)*((T_map/T)*(inputConnector.pressure/p_map)); //A.14d and A.14e with A.14b
+		p_in = inputConnector.pressure;
+		p_out = outputConnector.pressure;
 		
-		p_ratio = (outputConnector.pressure/inputConnector.pressure)*(T/T_map); // A.15a and A.15b
+		q_vol = (outputConnector.massFlow[1]+w_sl)*R*T/(p_in*M_g)*((T_map/T)*(p_in/p_map)); //A.14d and A.14e with A.14b
+		
+		p_ratio = (p_out/p_in)*(T/T_map); // A.15a and A.15b
 		
 		nu_u = p_ratio-(au*q_vol^2+bu*q_vol+cu); //A.16a and .17a
 		nu_d = (ad*q_vol^2+bd*q_vol+cd)-p_ratio; //A.16a and .17b
