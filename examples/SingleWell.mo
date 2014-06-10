@@ -1,4 +1,4 @@
-model SingleWellNetwork
+model SingleWell
 	Components.Well well;
 	Sources.GasPressureSource gSource;
 	Sinks.PressureSink pSink;
@@ -13,5 +13,5 @@ model SingleWellNetwork
 		gSource.pressure = p_in;
 		gSource.gasMassFlow = w_gl;
 		pSink.pressure = p_out;
-end SingleWellNetwork;
+end SingleWell;
 	

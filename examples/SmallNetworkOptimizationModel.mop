@@ -1,0 +1,17 @@
+optimization SmallNetworkOptimizationModel(objective = cost(finalTime),
+										   startTime = 0,
+									       finalTime = 20000)
+	extends SmallNetworkSimulationModel; 
+
+ 	constraint 
+		for i in 1:n_wells loop
+			w_gl[i] <= well[i].w_gl_max;
+		end for;
+		
+		compressor.nu_u <= 0;
+		compressor.nu_d <= 0;
+		compressor.nu_l <= 0;
+		compressor.nu_r <= 0;
+		
+end SmallNetworkOptimizationModel;
+	
