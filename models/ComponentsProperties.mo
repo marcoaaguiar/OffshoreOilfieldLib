@@ -27,18 +27,26 @@ import SI = Modelica.SIunits;
 		parameter SI.Density rho_w = 1030;       // [kg/m^3]		// water density	   
 		parameter SI.Density rho_o = 930;        // [kg/m^3]		// oil density	   
 		parameter SI.MolarMass M_g = 0.0195;       // [kg/mol]	// lift gas molecular weight (Molar Mass)  
+		parameter SI.DynamicViscosity mu_g = 1.99057142857142824E-5; //[Pa*s] gas dynamic viscosity @ T = 350 C, SG = 1, http://www.lmnoeng.com/Flow/GasViscosity.php
+		parameter SI.DynamicViscosity mu_w = 8.94e-4;       // [Pa*s]	// water dynamic viscosity	   	
+		parameter SI.DynamicViscosity mu_o = 1e-4;          // [Pa*s]	// oil dynamic viscosity	  
 	end MediaProperty;
 	
 	record WellProperty
-	  parameter SI.Temperature T_a=350;          // [K]	// annular temperature
-		parameter SI.Temperature T_t=350;          // [K]	// tubing temperature	   
-		parameter SI.Area A_a=0.02;         // [m^2]	// annular cross sectional area	   
-		parameter SI.Area A_t=0.012;        // [m^2]	// tubing cross sectional area	   
-		parameter SI.Volume V_a = 30;               // [m^3]		// Annular volume	  
-		parameter SI.Length L_a = V_a/A_a; 
-		parameter SI.Volume V_t=  18;               // [m^3]		// Tubing volume
-		parameter SI.Length L_t = V_t/A_t; 
-		parameter SI.Length L_w=  400;          // [m]		// tubing length from the injection point to the reservoir	  
+		parameter SI.Temperature 	T_a = 350;          	// [K]	// annular temperature
+		parameter SI.Area 			A_a = 0.02;         	// [m^2]	// annular cross sectional area	   
+		parameter SI.Area 			D_a = sqrt(4*A_a/Modelica.Constants.pi);         		// [m^2]	// annular cross sectional area	   
+		parameter SI.Volume 		V_a = 30;               // [m^3]		// Annular volume	  
+		parameter SI.Length 		L_a = V_a/A_a; 			// [m]
+		parameter SI.Length 		epsilon_a = 2.8e-5;     	// [m]	//  Annulus roughness
+		
+		parameter SI.Temperature 	T_t = 350;          	// [K]	// tubing temperature	   
+		parameter SI.Area 			A_t = 0.012;        	// [m^2]	// tubing cross sectional area	   
+		parameter SI.Area 			D_t = sqrt(4*A_t/Modelica.Constants.pi);         		// [m^2]	// annular cross sectional area	   
+		parameter SI.Volume 		V_t = 18;               // [m^3]		// Tubing volume
+		parameter SI.Length 		L_t = V_t/A_t; 
+		parameter SI.Length 		epsilon_t = 2.8e-5;     	// [m]	//  Annulus roughness
+		parameter SI.Length 		L_w = 400;          	// [m]		// tubing length from the injection point to the reservoir	  
 	end WellProperty;
 		
 	record ReservoirProperty
